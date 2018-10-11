@@ -20,6 +20,8 @@
 task main()
 {
 	int speed = 100;
+	int clawspeed = 40;
+	int armspeed = 100;
 	repeat(forever)
 	{
 		if(vexRT[Btn7U] == 1)
@@ -47,6 +49,30 @@ task main()
 			setMotor(rightMotor, speed);
 			waitUntil(vexRT[Btn7R] == 0);
 			stopMultipleMotors(leftMotor, rightMotor);
+		}
+		if(vexRT[Btn5U] == 1)
+		{
+			setMotor(clawMotor, clawspeed);
+			waitUntil(vexRT[Btn5U] == 0);
+			stopMotor(clawMotor);
+		}
+		if(vexRT[Btn5D] == 1)
+		{
+			setMotor(clawMotor, -clawspeed);
+			waitUntil(vexRT[Btn5D] == 0);
+			stopMotor(clawMotor);
+		}
+		if(vexRT[Btn6U] == 1)
+		{
+			setMotor(armMotor, armspeed);
+			waitUntil(vexRT[Btn6U] == 0);
+			stopMotor(armMotor);
+		}
+		if(vexRT[Btn6D] == 1)
+		{
+			setMotor(armMotor, -armspeed);
+			waitUntil(vexRT[Btn6D] == 0);
+			stopMotor(armMotor);
 		}
 	}
 }
