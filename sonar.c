@@ -18,6 +18,9 @@ int left = 36;
 int right = 30;
 int armspeed = 40;
 int dist = 15;
+int turn = 250;
+int turnspeed = 50;
+//int fdist = 30;
 void goforward()
 {
 	setMotor(leftMotor, left);
@@ -25,15 +28,34 @@ void goforward()
 	waitUntil(SensorValue[sonarSensor] <= dist);
 	stopMultipleMotors(leftMotor, rightMotor);
 }
+//void finalforward()
+//{
+//	setMotor(leftMotor, left);
+//	setMotor(rightMotor, right);
+//	waitUntil(SensorValue[sonarSensor] <= dist);
+//	stopMultipleMotors(leftMotor, rightMotor);
+//}
 
 void goleft()
 {
-
+	resetSensor(leftEncoder);
+	resetSensor(rightEncoder);
+	setMotor(leftMotor, turnspeed);
+	setMotor(rightMotor, -turnspeed);
+	waitUntil(SensorValue[rightEncoder] >= turn && SensorValue[leftEncoder] <= -turn);
+	stopMultipleMotors(leftMotor, rightMotor);
+	wait(20, milliseconds);
 }
 
 void goright()
 {
-
+	resetSensor(leftEncoder);
+	resetSensor(rightEncoder);
+	setMotor(leftMotor, -turnspeed);
+	setMotor(rightMotor, turnspeed);
+	waitUntil(SensorValue[rightEncoder] <= -turn && SensorValue[leftEncoder] >= turn);
+	stopMultipleMotors(leftMotor, rightMotor);
+	wait(20, milliseconds);
 }
 
 task main()
@@ -51,51 +73,44 @@ task main()
 			setMotor(armMotor, armspeed);
 			waitUntil(SensorValue[armPotent] <= 1250);
 			stopMotor(armMotor);
-			//Moves forwards until it is <dist>cm away from the wall.
+			//Moves forwards until it is <dist> away from the wall.
 			goforward();
 			//Turns right, 90 degrees.
-			resetSensor(leftEncoder);
-			resetSensor(rightEncoder);
-			setMotor(leftMotor, -left);
-			setMotor(rightMotor, right);
-			waitUntil(SensorValue[rightEncoder] <= -275 && SensorValue[leftEncoder] >= 275);
-			stopMultipleMotors(leftMotor, rightMotor);
-			resetSensor(leftEncoder);
-			resetSensor(rightEncoder);
-			//Moves forwards until it is <dist>cm away from the wall.
+			goright();
+			//Moves forwards until it is <dist> away from the wall.
 			goforward();
 			//Turns left, 90 degrees.
-			//CONFIG
-			setMotor(leftMotor, left);
-			setMotor(rightMotor, -right);
-			waitUntil(SensorValue[rightEncoder] <= -275 && SensorValue[leftEncoder] >= 275);
-			stopMultipleMotors(leftMotor, rightMotor);
-			resetSensor(leftEncoder);
-			resetSensor(rightEncoder);
-			//Moves forwards until it is <dist>cm away from the wall.
+			goleft();
+			//Moves forwards until it is <dist> away from the wall.
 			goforward();
 			//Turns left, 90 degrees.
-			setMotor(leftMotor, -left);
-			setMotor(rightMotor, right);
-			waitUntil(SensorValue[rightEncoder] <= -275 && SensorValue[leftEncoder] >= 275);
-			stopMultipleMotors(leftMotor, rightMotor);
-			resetSensor(leftEncoder);
-			resetSensor(rightEncoder);
-			//Moves forwards until it is <dist>cm away from the wall.
+			goleft();
+			//Moves forwards until it is <dist> away from the wall.
 			goforward();
 			//Turns right, 90 degrees.
-			//CONFIG
-			setMotor(leftMotor, -left);
-			setMotor(rightMotor, right);
-			waitUntil(SensorValue[rightEncoder] >= 275 && SensorValue[leftEncoder] <= -275);
-			stopMultipleMotors(leftMotor, rightMotor);
-			resetSensor(leftEncoder);
-			resetSensor(rightEncoder);
-			//Moves forwards until it is <dist>cm away from the wall.
+			goright();
+			//Moves forwards until it is <dist> away from the wall.
 			goforward();
-			//
-
+			//Turns right, 90 degrees.
+			goright();
+			//Moves forwards until it is <dist> away from the wall.
+			goforward();
+			//Turns right, 90 degrees
+			goleft();
+			//Moves forwards until it is <dist> away from the wall. Will go on forever, in theory.
+			goforward();
+			//End
 			turnLEDOff(led);
+		}
+		if(vexRT[Btn6U] == 1)
+		{
+			goforward();
+			goleft();
+		}
+		if(vexRT[Btn6D] == 1)
+		{
+			goforward();
+			goright();
 		}
 	}
 }
