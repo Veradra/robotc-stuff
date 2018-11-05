@@ -23,9 +23,16 @@ int left = 36;
 int right = 30;
 int dist = 15;
 int turn = 250;
-int turnspeed = 50;
-int varspeed = vexRT[Ch2];
-int varturn = vexRT[Ch1];
+int turnspeed = 70;
+int sl = 600;
+int sr = 605;
+int leftc = 60;
+int rightc = 60;
+int avoid = 200;
+int leftCorr = 100;
+int rightCorr = 100;
+int lc = 50;
+int rc = 50;
 
 //void functions. Declare before use!
 void goLeft()
@@ -58,13 +65,58 @@ void goForward()
 	stopMultipleMotors(leftMotor, rightMotor);
 }
 
+
+void leftCTRL()
+{
+	setMotor(leftMotor, turnspeed);
+	setMotor(rightMotor, -turnspeed);
+	wait1Msec(20);
+	if(vexRT[Btn7L] == 0)
+	{
+		stopMultipleMotors(leftMotor, rightMotor);
+	}
+}
+
+void rightCTRL()
+{
+	setMotor(leftMotor, -turnspeed);
+	setMotor(rightMotor, turnspeed);
+	wait1Msec(20);
+	if(vexRT[Btn7R] == 0)
+	{
+		stopMultipleMotors(leftMotor, rightMotor);
+	}
+}
+
+void forwardCTRL()
+{
+	setMotor(rightMotor, rightc);
+	setMotor(leftMotor, leftc);
+	wait1Msec(20);
+	if(vexRT[Btn7U] == 0)
+	{
+		stopMultipleMotors(leftMotor, rightMotor);
+	}
+}
+
+void backwardsCTRL()
+{
+	setMotor(rightMotor, -rightc);
+	setMotor(leftMotor, -leftc);
+	wait1Msec(20);
+	if(vexRT[Btn7D] == 0)
+	{
+		stopMultipleMotors(leftMotor, rightMotor);
+	}
+}
+
 void swingLeft()
 {
 	resetSensor(leftEncoder);
 	resetSensor(rightEncoder);
 	setMotor(leftMotor, 0);
 	setMotor(rightMotor, turnspeed);
-	waitUntil();
+	waitUntil(SensorValue[leftEncoder] >= sl);
 	stopMultipleMotors(leftMotor, rightMotor);
 	wait(20, milliseconds);
 }
@@ -75,24 +127,70 @@ void swingRight()
 	resetSensor(rightEncoder);
 	setMotor(leftMotor, turnspeed);
 	setMotor(rightMotor, 0);
-	waitUntil();
+	waitUntil(SensorValue[rightEncoder] >= sr);
 	stopMultipleMotors(leftMotor, rightMotor);
 	wait(20, milliseconds);
 }
 
-void leftCTRL()
+void correctionL()
 {
-	setMultipleMotors(varspeed, leftMotor, rightMotor);
-	wait(20, milliseconds)
+	setMotor(leftMotor, -lc);
+	setMotor(rightMotor, rightCorr);
+	wait(10, milliseconds);
 }
 
-void forwardCTRL()
+void correctionR()
 {
-
+	setMotor(leftMotor, leftCorr);
+	setMotor(rightMotor, -rc);
+	wait(10, milliseconds);
 }
 
 task main()
 {
-
-
+	repeat(forever)
+	{
+		if(vexRT[Btn7U] == 1)
+		{
+			forwardCTRL();
+		}
+		if(vexRT[Btn7R] == 1)
+		{
+			rightCTRL();
+		}
+		if(vexRT[Btn7D] == 1)
+		{
+			backwardsCTRL();
+		}
+		if(vexRT[Btn7L] == 1)
+		{
+			leftCTRL();
+		}
+		if(vexRT[Btn5U] == 1 || vexRT[Btn5D] == 1)
+		{
+			armControl(clawMotor, Btn5U, Btn5D, 30);
+			wait1Msec(100);
+			stopMotor(clawMotor);
+		}
+		if(vexRT[Btn6U] == 1 || vexRT[Btn6D] == 1)
+		{
+			armControl(armMotor, Btn6U, Btn6D, 30);
+			wait1Msec(100);
+			stopMotor(armMotor);
+		}
+		if(vexRT[Btn8U] == 1)
+		{
+			repeatUntil(vexRT[Btn8D] == 1)
+			{
+				if(SensorValue[lineLeft] >= avoid)
+				{
+					correctionR();
+				}
+				if(SensorValue[lineRight] >= avoid)
+				{
+					correctionL();
+				}
+			}
+		}
+	}
 }
