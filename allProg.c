@@ -33,8 +33,12 @@ int leftCorr = 100;
 int rightCorr = 100;
 int lc = 50;
 int rc = 50;
+int armspeed = 20;
+int sw;
+int t = 2000;
 
 //void functions. Declare before use!
+//Automatically turns left
 void goLeft()
 {
 	resetSensor(leftEncoder);
@@ -46,6 +50,7 @@ void goLeft()
 	wait(20, milliseconds);
 }
 
+//Automatically turns right
 void goRight()
 {
 	resetSensor(leftEncoder);
@@ -57,14 +62,25 @@ void goRight()
 	wait(20, milliseconds);
 }
 
+/*Automatically goes forwards. !NOTE! this has a "switch" variable ('sw'). By
+default, this value is set to 0 but can be changed by going: 'sw = 1;' when needed.
+Please set back to 0 when done (sw = 0;).
+*/
 void goForward()
 {
 	setMotor(leftMotor, left);
 	setMotor(rightMotor, right);
-	waitUntil(SensorValue[sonarSensor] <= dist);
-	stopMultipleMotors(leftMotor, rightMotor);
+	if(sw == 1)
+	{
+		wait1Msec(t);
+		stopMultipleMotors(leftMotor, rightMotor);
+	}
+	if(sw == 0)
+	{
+		waitUntil(SensorValue[sonarSensor] <= dist);
+		stopMultipleMotors(leftMotor, rightMotor);
+	}
 }
-
 
 void leftCTRL()
 {
@@ -146,41 +162,73 @@ void correctionR()
 	wait(10, milliseconds);
 }
 
+void afo()
+{
+	setMotor(armMotor, armspeed);
+	waitUntil(SensorValue[armPotent] <= 1250);
+	stopMotor(armMotor);
+}
+
+
+task sonar()
+{
+	while(true)
+		if(SensorValue[sonarSensor] <= dist)
+	{
+		stopAllMotors();
+		}else{
+		wait1Msec(10);
+	}
+}
+
 task main()
 {
-	repeat(forever)
+	while(true)
+	waitUntil(SensorValue[bumpTouch] == 1);
 	{
-		if(vexRT[Btn7U] == 1)
+		sw = 0;
+		afo();
+		repeat(forever)
 		{
-			forwardCTRL();
-		}
-		if(vexRT[Btn7R] == 1)
-		{
-			rightCTRL();
-		}
-		if(vexRT[Btn7D] == 1)
-		{
-			backwardsCTRL();
-		}
-		if(vexRT[Btn7L] == 1)
-		{
-			leftCTRL();
-		}
-		if(vexRT[Btn5U] == 1 || vexRT[Btn5D] == 1)
-		{
-			armControl(clawMotor, Btn5U, Btn5D, 30);
-			wait1Msec(100);
-			stopMotor(clawMotor);
-		}
-		if(vexRT[Btn6U] == 1 || vexRT[Btn6D] == 1)
-		{
-			armControl(armMotor, Btn6U, Btn6D, 30);
-			wait1Msec(100);
-			stopMotor(armMotor);
-		}
-		if(vexRT[Btn8U] == 1)
-		{
-			repeatUntil(vexRT[Btn8D] == 1)
+			if(vexRT[Btn8L] == 1)
+			{
+				startTask(sonar);
+			}
+			if(vexRT[Btn7U] == 1)
+			{
+				forwardCTRL();
+			}
+			if(vexRT[Btn7R] == 1)
+			{
+				rightCTRL();
+			}
+			if(vexRT[Btn7D] == 1)
+			{
+				backwardsCTRL();
+			}
+			if(vexRT[Btn7L] == 1)
+			{
+				leftCTRL();
+			}
+			if(vexRT[Btn5U] == 1 || vexRT[Btn5D] == 1)
+			{
+				armControl(clawMotor, Btn5U, Btn5D, 30);
+				wait1Msec(100);
+				stopMotor(clawMotor);
+			}
+			if(vexRT[Btn6U] == 1 || vexRT[Btn6D] == 1)
+			{
+				armControl(armMotor, Btn6U, Btn6D, 30);
+				wait1Msec(100);
+				stopMotor(armMotor);
+			}
+			if(vexRT[Btn8R] == 1)
+			{
+				sw = 1;
+				goForward();
+				sw = 0;
+			}
+			if(vexRT[Btn8U] == 1)
 			{
 				if(SensorValue[lineLeft] >= avoid)
 				{
