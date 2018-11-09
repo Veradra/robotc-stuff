@@ -33,7 +33,8 @@ int leftCorr = 100;
 int rightCorr = 100;
 int lc = 50;
 int rc = 50;
-int armspeed = 20;
+int armspeed = 40;
+int clawspeed = 40;
 int sw;
 int t = 2000;
 
@@ -49,7 +50,6 @@ void goLeft()
 	stopMultipleMotors(leftMotor, rightMotor);
 	wait(20, milliseconds);
 }
-
 //Automatically turns right
 void goRight()
 {
@@ -61,7 +61,6 @@ void goRight()
 	stopMultipleMotors(leftMotor, rightMotor);
 	wait(20, milliseconds);
 }
-
 /*
 Automatically goes forwards. !NOTE! this has a "switch" variable ('sw'). By
 default, this value is set to 0 but can be changed by going: 'sw = 1;' when needed.
@@ -175,22 +174,21 @@ void afo()
 Sonar task is here! This task will make sure you can toggle "crash mode"
 aka, if you can run into a wall or not. Not much needs to be done with it.
 */
+
 task sonar()
 {
 	while(true)
 		if(SensorValue[sonarSensor] <= dist)
 	{
 		stopMultipleMotors(leftMotor, rightMotor);
-		stopAllTasks();
 		}else{
 		wait1Msec(10);
 	}
 }
+
 //Main task, has the bulk of the program in use.
 task main()
 {
-	//Dunno to be honest.
-	while(true)
 	//We wait for the bumpTouch sensor to be pressed to start.
 	waitUntil(SensorValue[bumpTouch] == 1);
 	{
@@ -199,68 +197,41 @@ task main()
 		afo();
 		repeat(forever)
 		{
-			//Starts the sonar task if 8L is pressed.
-			if(vexRT[Btn8L] == 1)
-			{
-				startTask(sonar);
-			}
-			//Moves forwards, manually.
 			if(vexRT[Btn7U] == 1)
 			{
 				forwardCTRL();
 			}
-			//Turns right, manually.
-			if(vexRT[Btn7R] == 1)
-			{
-				rightCTRL();
-			}
-			//Goes backwards, manually.
 			if(vexRT[Btn7D] == 1)
 			{
 				backwardsCTRL();
 			}
-			//Turns left, manually.
+			if(vexRT[Btn7R] == 1)
+			{
+				rightCTRL();
+			}
 			if(vexRT[Btn7L] == 1)
 			{
 				leftCTRL();
 			}
-			/*Allows for claw control. '||' means OR, so we can use 5U OR 5D, same
-			buttons we use to control the claw itself.
-			*/
+			if(vexRT[Ch1] >= 70)
+			{
+				startTask(sonar);
+			}
+			if(vexRT[Ch1] <= -70)
+			{
+				stopTask(sonar);
+			}
 			if(vexRT[Btn5U] == 1 || vexRT[Btn5D] == 1)
 			{
-				armControl(clawMotor, Btn5U, Btn5D, 30);
-				wait1Msec(100);
-				stopMotor(clawMotor);
-			}
-			/*
-			Allows for arm contol. '||' means OR, so we can use 6U OR 6D, same
-			buttons we use to control the arm itself.
-			*/
-			if(vexRT[Btn6U] == 1 || vexRT[Btn6D] == 1)
-			{
-				armControl(armMotor, Btn6U, Btn6D, 30);
-				wait1Msec(100);
+				armControl(armMotor, Btn5U, Btn5D, armspeed);
+				wait1Msec(10);
 				stopMotor(armMotor);
 			}
-			//Goes forwards, automatically. Timed for t.
-			if(vexRT[Btn8R] == 1)
+			if(vexRT[Btn6U] == 1 || vexRT[Btn6D] == 1)
 			{
-				sw = 1;
-				goForward();
-				sw = 0;
-			}
-			//Line followers, and their correction. 8U starts this.
-			if(vexRT[Btn8U] == 1)
-			{
-				if(SensorValue[lineLeft] >= avoid)
-				{
-					correctionR();
-				}
-				if(SensorValue[lineRight] >= avoid)
-				{
-					correctionL();
-				}
+				armControl(clawMotor, Btn6U, Btn6D, clawspeed);
+				wait1Msec(10);
+				stopMotor(clawMotor);
 			}
 		}
 	}
