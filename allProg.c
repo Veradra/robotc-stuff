@@ -190,7 +190,7 @@ task sonar()
 task main()
 {
 	//We wait for the bumpTouch sensor to be pressed to start.
-	waitUntil(SensorValue[bumpTouch] == 1);
+	waitUntil(SensorValue[bumpTouch] == 1 || vexRT[Ch4] == 127);
 	{
 		//Sets 'sw' to 0. Moves arm out of the way.
 		sw = 0;
@@ -233,6 +233,22 @@ task main()
 				wait1Msec(10);
 				stopMotor(clawMotor);
 			}
+			if(vexRT[Ch2] >= 70)
+			{
+				repeatUntil(vexRT[Ch2] <= -70)
+				{
+					goForward();
+					if(SensorValue[lineLeft] >= avoid)
+					{
+						correctionR();
+					}
+					if(SensorValue[lineRight] >= avoid)
+					{
+						correctionL();
+					}
+				}
+			}
+
 		}
 	}
 }
