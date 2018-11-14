@@ -62,11 +62,11 @@ void goRight()
 }
 /*
 Automatically goes forwards. !NOTE! this has a "switch" variable ('sw'). By
-default, this value is set to 0 but can be changed by going: 'sw = 1;' when needed.
-Please go 'sw = -1;' when done. This will be cleared and set to 0 shortly after, and
-stop the motors.
+default, this value is set to 0 but can be changed by putting a number where X is
+in 'goForward(X);' when needed. Please go 'sw = -1;' when done. This will be
+cleared and set to 0 shortly after (the default), and stop the motors.
 */
-void goForward()
+void goForward(int sw, int encval)
 {
 	setMotor(leftMotor, left);
 	setMotor(rightMotor, right);
@@ -88,6 +88,12 @@ void goForward()
 		setMotor(leftMotor, left);
 		setMotor(rightMotor, right);
 		wait(10, milliseconds);
+	}
+	if(sw == 3)
+	{
+		setMotor(leftMotor, left);
+		setMotor(rightMotor, right);
+		waitUntil(SensorValue[leftEncoder] >=encval && SensorValue[rightEncoder] >=encval);
 	}
 }
 //Allows for manual left point turns.
@@ -204,6 +210,7 @@ task main()
 		afo();
 		repeat(forever)
 		{
+			while(<=)
 			while(sw == -1)
 			{
 				sw = 0;
@@ -247,10 +254,9 @@ task main()
 			}
 			if(vexRT[Ch2] >= 70)
 			{
-				sw = 2;
 				repeatUntil(vexRT[Ch2] <= -70)
 				{
-					goForward();
+					goForward(2, 0);
 					if(SensorValue[lineLeft] >= avoid)
 					{
 						correctionR();
@@ -264,7 +270,20 @@ task main()
 			}
 			if(vexRT[Btn8U] == 1)
 			{
-				sw = 1
+				goForward(3, 50);
+				wait1Msec(30);
+				swingLeft(1);
+				goForward(3, 50);
+				wait1Msec(30);
+				swingRight(1);
+				goForward(3, 50);
+				wait1Msec(30);
+				swingLeft(1);
+				goForward(3, 50);
+				wait1Msec(100);
+				goLeft();
+				goForward(3, 500);
+				goRight();
 			}
 		}
 	}
