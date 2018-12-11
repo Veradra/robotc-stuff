@@ -28,14 +28,15 @@ int sr = 605;
 int leftc = 60;
 int rightc = 60;
 int avoid = 200;
-int leftCorr = 100;
-int rightCorr = 100;
-int lc = 25;
-int rc = 25;
+int leftCorr = 80;
+int rightCorr = 80;
+int lc = 35;
+int rc = 35;
 int armspeed = 40;
 int clawspeed = 40;
 int sw;
 int t = 2000;
+int dnc;
 
 //void functions. Declare before use!
 //Automatically turns left
@@ -203,18 +204,40 @@ task sonar()
 task main()
 {
 	//We wait for the bumpTouch sensor to be pressed to start.
-	waitUntil(SensorValue[bumpTouch] == 1 || vexRT[Ch4] == 127);
+	waitUntil(SensorValue[bumpTouch] == 1);
 	{
 		//Sets 'sw' to 0. Moves arm out of the way.
 		sw = 0;
 		afo();
 		repeat(forever)
 		{
-			while(<=)
+			/*Keeps the arm from going over and flipping itself. If for whatever
+			reason you NEED to do that, make sure to set 'dnc' to 1 with 'dnc = 1;'
+			where needed. Please set to 0 when you don't need to do this.
+			(dnc stands for 'Do Not Check' in this case)
+			*/
+			while(SensorValue[armPotent] <= 1000 && dnc == 0)
+			{
+				setMotor(armMotor, -armspeed);
+				wait1Msec(50);
+				setMotor(armMotor, armspeed/2);
+				wait1Msec(50);
+				stopMotor(armMotor);
+			}
 			while(sw == -1)
 			{
 				sw = 0;
 				stopMultipleMotors(leftMotor, rightMotor);
+			}
+			if(SensorValue[frontTouch] == 1)
+			{
+				setMotor(armMotor, armspeed);
+				wait1Msec(50);
+				stopMotor(armMotor);
+			}
+			if(vexRT[Btn8D] == 1)
+			{
+				goForward(1, 0);
 			}
 			if(vexRT[Btn7U] == 1)
 			{
