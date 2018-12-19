@@ -16,10 +16,12 @@ int speed = 127;
 int leftc = 60;
 int rightc = 60;
 int turnspeed = 70;
-
+int safetydis;
+int sdm;
+int sdm2;
 
 //void
-//Allows us to lift the lift up or down.
+//Allows us to lift the lift up.
 void liftup()
 {
 	if(vexRT[Btn5U] == 1)
@@ -32,6 +34,8 @@ void liftup()
 		}
 	}
 }
+
+//Allows us to lift the lift down.
 void liftdown()
 {
 	if(vexRT[Btn5D] == 1)
@@ -40,6 +44,8 @@ void liftdown()
 		wait1Msec(10);
 		if(vexRT[Btn5D] == 0)
 		{
+			setMotor(liftMotor, speed);
+			wait1Msec(30);
 			stopMotor(liftMotor);
 		}
 	}
@@ -50,7 +56,7 @@ void leftCTRL()
 {
 	setMotor(leftMotor, turnspeed);
 	setMotor(rightMotor, -turnspeed);
-	wait1Msec(20);
+	wait1Msec(10);
 	if(vexRT[Btn7L] == 0)
 	{
 		stopMultipleMotors(leftMotor, rightMotor);
@@ -61,7 +67,7 @@ void rightCTRL()
 {
 	setMotor(leftMotor, -turnspeed);
 	setMotor(rightMotor, turnspeed);
-	wait1Msec(20);
+	wait1Msec(10);
 	if(vexRT[Btn7R] == 0)
 	{
 		stopMultipleMotors(leftMotor, rightMotor);
@@ -72,7 +78,7 @@ void forwardCTRL()
 {
 	setMotor(rightMotor, rightc);
 	setMotor(leftMotor, leftc);
-	wait1Msec(20);
+	wait1Msec(10);
 	if(vexRT[Btn7U] == 0)
 	{
 		stopMultipleMotors(leftMotor, rightMotor);
@@ -83,7 +89,7 @@ void backwardsCTRL()
 {
 	setMotor(rightMotor, -rightc);
 	setMotor(leftMotor, -leftc);
-	wait1Msec(20);
+	wait1Msec(10);
 	if(vexRT[Btn7D] == 0)
 	{
 		stopMultipleMotors(leftMotor, rightMotor);
@@ -92,23 +98,51 @@ void backwardsCTRL()
 
 //task(s)
 
+/*math or something. We're taking the button presses and dividing it by the CPU's
+fequency (10MHz, 10,000 Hz) to get how many seconds we are pressing the button for.
+*/
+task mth()
+{
+	while(true)
+	{
+  /*We "copy" the value of safetydis to sdm, so we are not doing anything destructive
+  to safety dis, in the event that we need the raw value.*/
+		sdm = safetydis;
+		wait1Msec(100);
+  /*We devide sdm by 10,000 to get approximately how many seconds we have pressed the
+  button for, then "copy" it to sdm2 for future use.*/
+		sdm2 = sdm/10000;
+	}
+}
+
 //Emergency lift stops.
 task liftstops()
 {
 	while(true)
 	{
-		if(SensorValue[liftStop] >= 500 || SensorValue[liftEnc] >= 850)
+		if(SensorValue[liftStop] >= 500 || SensorValue[liftEnc] >= 825)
 		{
 			stopMotor(liftMotor);
 			if(SensorValue[liftStop] >= 500)
 			{
-				setMotor(liftMotor, speed)
-				wait1Msec(30);
+				setMotor(liftMotor, speed);
+				wait1Msec(15);
 				stopMotor(liftMotor);
+				}else{
+				wait1Msec(10);
 			}
-			if(SensorValue[liftEnc] >= 850)
-			}else{
-			wait1Msec(10)
+			if(SensorValue[liftEnc] >= 825)
+			{
+				setMotor(liftMotor, -speed);
+				wait1Msec(15);
+				stopMotor(liftMotor);
+				}else{
+				wait1Msec(10);
+			}
+		}
+		if(vexRT[Ch2] >= 100)
+		{
+			stopAllMotors();
 		}
 	}
 }
@@ -116,10 +150,11 @@ task liftstops()
 //main task
 task main()
 {
+	startTask(mth);
 	setMotor(liftMotor, -speed);
 	waitUntil(SensorValue[liftStop] >= 500);
 	stopMotor(liftMotor);
-	resetMotorEncoder(liftEnc);
+	resetSensor(liftEnc);
 	startTask(liftstops);
 	repeat(forever)
 	{
@@ -147,6 +182,15 @@ task main()
 		{
 			leftCTRL();
 		}
+		if(vexRT[Btn8U] == 1)
+		{
+			stopTask(liftstops);
+			++safetydis;
+		}
+		if(vexRT[Btn8D] == 1 && safetydis >= 100)
+		{
+			startTask(liftstops);
+			safetydis = 0;
+		}
 	}
-}
 }
