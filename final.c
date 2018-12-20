@@ -120,9 +120,13 @@ task liftstops()
 {
 	while(true)
 	{
+  /*We wait for either the lift encoder (liftEnc) to detect that the lift has gotten too far
+  up, or for the light sensor (liftStop) to detect that we are near the bottom.*/
 		if(SensorValue[liftStop] >= 500 || SensorValue[liftEnc] >= 825)
 		{
+   //Stops the motor regardless of state.
 			stopMotor(liftMotor);
+   //If the lifttSop is tripped.
 			if(SensorValue[liftStop] >= 500)
 			{
 				setMotor(liftMotor, speed);
@@ -131,6 +135,7 @@ task liftstops()
 				}else{
 				wait1Msec(10);
 			}
+   //If liftEnc is tripped.
 			if(SensorValue[liftEnc] >= 825)
 			{
 				setMotor(liftMotor, -speed);
@@ -140,6 +145,7 @@ task liftstops()
 				wait1Msec(10);
 			}
 		}
+  //Just turn off all the motors. Don't remember the use for this.
 		if(vexRT[Ch2] >= 100)
 		{
 			stopAllMotors();
@@ -150,14 +156,26 @@ task liftstops()
 //main task
 task main()
 {
+ //Start the mth task
 	startTask(mth);
+ /*We do the following to calibration, and to have a contstant 0 value for liftEnc
+ for ease of programming.*/
+ //Send the lift motor down
 	setMotor(liftMotor, -speed);
+ /*Wait until liftStop is tripped. We use this as it's analogue, and thus keeps a value
+ between power states.*/
 	waitUntil(SensorValue[liftStop] >= 500);
+ //Stop the motor, we've reached our goal.
 	stopMotor(liftMotor);
+ //Set liftEnc to 0 here.
 	resetSensor(liftEnc);
+ //Start the safety "liftstops" task.
 	startTask(liftstops);
+ //loop
 	repeat(forever)
 	{
+  /*The following are all looking for certain actions, like us pressing a button, which
+  triggers a certain void function to run.*/
 		if(vexRT[Btn5D] == 1)
 		{
 			liftdown();
@@ -182,14 +200,18 @@ task main()
 		{
 			leftCTRL();
 		}
+  //Button to disable the safety.
 		if(vexRT[Btn8U] == 1)
 		{
 			stopTask(liftstops);
+   //We add 1 to safety dis as long as we are pressng 8U.
 			++safetydis;
 		}
+  //Allows us to re-enable the safety, as long as we have pressed 8U for at least some time.
 		if(vexRT[Btn8D] == 1 && safetydis >= 100)
 		{
 			startTask(liftstops);
+   //Also we reset safetydis.
 			safetydis = 0;
 		}
 	}
