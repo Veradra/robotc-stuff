@@ -18,8 +18,12 @@ int leftc = 60;
 int rightc = 60;
 int turnspeed = 70;
 int safetydis;
-int sdm;
-int sdm2;
+// int sdm;
+// int sdm2;
+// int ctrlinuse;
+// int lrctrlinuse;
+int spdmul = 1;
+int rnd = random(1000000);
 
 //void
 //Allows us to lift the lift up.
@@ -52,6 +56,9 @@ void liftdown()
 	}
 }
 
+//We are now using joystick controls. This is only here incase they don't work
+//all too well.
+//They didn't work well at all. Mostly screaming.
 //Allows for left point turns.
 void leftCTRL()
 {
@@ -77,8 +84,8 @@ void rightCTRL()
 //Allows for manual forwards.
 void forwardCTRL()
 {
-	setMotor(rightMotor, rightc);
-	setMotor(leftMotor, leftc);
+	setMotor(rightMotor, rightc * spdmul);
+	setMotor(leftMotor, leftc * spdmul);
 	wait1Msec(10);
 	if(vexRT[Btn7U] == 0)
 	{
@@ -88,8 +95,8 @@ void forwardCTRL()
 //Allows for manual backwards.
 void backwardsCTRL()
 {
-	setMotor(rightMotor, -rightc);
-	setMotor(leftMotor, -leftc);
+	setMotor(rightMotor, -rightc * spdmul);
+	setMotor(leftMotor, -leftc * spdmul);
 	wait1Msec(10);
 	if(vexRT[Btn7D] == 0)
 	{
@@ -97,10 +104,36 @@ void backwardsCTRL()
 	}
 }
 
-/*Thought I'd mention this, but we aren't using the joystick because despite my best
-efforts, I couldn't get it to work. I gave up and decided "Ah fk it, digital all the
-way I guess" and are using the face buttons, so no variable speeds :(. Might try again
-and get it to work, but that'll be a pain to get working again.*/
+//joystick controls. They're here for archival purposes, and should only be used
+//if you're curious. Generally though, this is to be considered depreciated.
+// void ctrl()
+// {
+// 	if(vexRT[Ch3] >= 10 || vexRT[Ch3] <= -10)
+// 	{
+// 		++ctrlinuse;
+// 		setMultipleMotors(vexRT[Ch3] / 1.5 , leftMotor, rightMotor);
+// 	}
+// 	if(vexRT[Ch3] <=9 && vexRT[Ch3] >= -9 && lrctrlinuse == 0)
+// 	{
+// 		ctrlinuse = 0;
+// 		stopMultipleMotors(leftMotor, rightMotor);
+// 	}
+// }
+
+// void lrctrl()
+// {
+// 	if(vexRT[Ch1] >=10 || vexRT[Ch1] <= -10)
+// 	{
+// 		++lrctrlinuse;
+// 		setMotor(leftMotor, -vexRT[Ch1]);
+// 		setMotor(rightMotor, vexRT[Ch1]);
+// 	}
+// 	if(vexRT[Ch1] <=9 && vexRT[Ch1] >= -9 && ctrlinuse == 0)
+// 	{
+// 		lrctrlinuse = 0;
+// 		stopMultipleMotors(leftMotor, rightMotor);
+// 	}
+// }
 
 //task(s)
 
@@ -112,17 +145,28 @@ least 1 second for it to work, which is also the reason it isn't used. See the p
 of the code commented out, under the header "//SEE". It's near the bottom of the
 code, by the way. All you need to do is uncomment the sdm2 part, and comment out the
 safetydis part to avoid conflicts*/
+//UPDATE: Used for the led to flicker, but slightly modified.
 task mth()
 {
 	while(true)
 	{
-		/*We "copy" the value of safetydis to sdm, so we are not doing anything destructive
-		to safety dis, in the event that we need the raw value.*/
-		sdm = safetydis;
-		wait1Msec(100);
-		/*We devide sdm by 10,000 to get approximately how many seconds we have pressed the
-		button for, then "copy" it to sdm2 for future use.*/
-		sdm2 = sdm/10000;
+		if(rnd % 8 == 0)
+		{
+			turnLEDOn(led);
+			wait1Msec(10);
+			turnLEDOff(led);
+			rnd = random(1000000);
+		}else{
+			rnd = random(1000000);
+			wait1Msec(10);
+		}
+		// /*We "copy" the value of safetydis to sdm, so we are not doing anything destructive
+		// to safety dis, in the event that we need the raw value.*/
+		// sdm = safetydis;
+		// wait1Msec(100);
+		// /*We devide sdm by 10,000 to get approximately how many seconds we have pressed the
+		// button for, then "copy" it to sdm2 for future use.*/
+		// sdm2 = sdm/10000;
 	}
 }
 
@@ -174,7 +218,7 @@ task main()
 {
 	//Start the mth task
 	startTask(mth);
-	/*We do the following to calibration, and to have a contstant 0 value for liftEnc
+	/*We do the following for calibration, and to have a contstant 0 value for liftEnc
 	for ease of programming.*/
 	//Send the lift motor down
 	setMotor(liftMotor, -speed);
@@ -200,6 +244,8 @@ task main()
 		{
 			liftup();
 		}
+		//We are using joystick controls. These are only here if they don't work.
+		//They didn't. Use these.
 		if(vexRT[Btn7U] == 1)
 		{
 			forwardCTRL();
@@ -216,6 +262,30 @@ task main()
 		{
 			leftCTRL();
 		}
+		//Speed multipliers. Sets spdmul to different values, which are them multiplied by
+		//their respective values when we go forwards or backwards.
+		if(vexRT[Btn8R] == 1)
+		{
+			spdmul = 2;
+		}
+		if(vexRT[Btn8L] == 1)
+		{
+			spdmul = 1;
+		}
+		if(vexRT[Btn6U] == 1)
+
+
+		//Joysick controls for forwards & backwards.
+		//Broken.
+		// if(vexRT[Ch3] >= 10 || vexRT[Ch3] <= -10)
+		// {
+		// 	ctrl();
+		// }
+		// //Joystick controls for left & right.
+		// if(vexRT[Ch1] >= 10 || vexRT[Ch1] <= -10)
+		// {
+		// 	lrctrl();
+		// }
 		//Button to disable the "safety". Only reason to use this is when adding something onto
 		//the lift, and going all the way UP.
 		if(vexRT[Btn8U] == 1)
