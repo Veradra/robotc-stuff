@@ -14,17 +14,21 @@
 
 //There are too many comments.
 
-//int
-int speed = 127;
-int leftc = 60;
-int rightc = 60;
-int turnspeed = 70;
+//int & char values.
+//int can store -2,147,483,648 to 2,147,483,647. This is a massive amout of numbers.
+//char can only store -128 to 127. This is ideal for things we know the value of, and
+//will not exceed a certain value, we might as well save a few bytes of RAM and use a
+//char instead of an int.
+char speed = 127;
+char leftc = 60;
+char rightc = 60;
+char turnspeed = 70;
 int safetydis;
-// int sdm;
-// int sdm2;
-// int ctrlinuse;
-// int lrctrlinuse;
-int spdmul = 1;
+int sdm;
+int sdm2;
+// char ctrlinuse;
+// char lrctrlinuse;
+char spdmul = 1;
 int rnd;
 
 //void
@@ -174,7 +178,7 @@ task mth()
 		if(rnd % 8 == 0)
 		{
 			turnLEDOn(led);
-			wait1Msec(10);
+			wait1Msec(30);
 			turnLEDOff(led);
 			rnd = rand();
 		}else{
@@ -237,7 +241,7 @@ task liftstops()
 //main task
 task main()
 {
-	//Generates a random seed based off the current system time.
+	//Generates a random seed based off the current system time (time since boot).
 	srand(nSysTime);
 	//Start the mth task
 	startTask(mth);
