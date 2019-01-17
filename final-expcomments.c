@@ -14,6 +14,8 @@
 
 //There are too many comments.
 
+//Refer to the LICENSE file for copyright information. (GPLv3, https://www.gnu.org/licenses/)
+
 //int & char values.
 //int can store -2,147,483,648 to 2,147,483,647. This is a massive amout of numbers.
 //char can only store -128 to 127. This is ideal for things we know the value of, and

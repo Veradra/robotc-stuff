@@ -14,6 +14,8 @@
 
 //See final-expcomments.c for this with significantly more comments + unused stuff.
 
+//Refer to the LICENSE file for copyright information. (GPLv3, https://www.gnu.org/licenses/)
+
 //int & char values.
 char speed = 127;
 char leftc = 60;
