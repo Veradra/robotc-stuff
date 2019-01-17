@@ -110,6 +110,10 @@ void backwardsCTRL()
 	}
 }
 //Automatic part of the program, called later.
+//Initally, we had another void to save some space. Accidentally copied a little
+//too much. A little bit of thought later, we realized it was actually completely
+//useless, as the space used by it was about the same as us just putting the things
+//in. So it doesn't exist anymore.
 void autoctrl()
 {
 	waitUntil(vexRT[Btn6D] == 1);
